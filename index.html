@@ -7,11 +7,27 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
+<meta name="build" content="20260813-001"/>
 <script>
   (function() {
-    if (!window.location.search.includes('v=')) {
-      window.location.replace(window.location.href + '?v=' + Date.now());
+    var BUILD = document.querySelector('meta[name="build"]').content;
+    var stored = sessionStorage.getItem('nl_build');
+    if (stored && stored !== BUILD) {
+      sessionStorage.setItem('nl_build', BUILD);
+      window.location.reload(true);
+      return;
     }
+    sessionStorage.setItem('nl_build', BUILD);
+    // 서버에서 최신 빌드 번호 확인
+    fetch(window.location.pathname + '?check=' + Date.now(), {cache: 'no-store'})
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        var m = html.match(/meta name="build" content="([^"]+)"/);
+        if (m && m[1] !== BUILD) {
+          sessionStorage.setItem('nl_build', m[1]);
+          window.location.reload(true);
+        }
+      }).catch(function(){});
   })();
 </script>
 <title>라스트마일시장 뉴스레터 아카이브</title>
