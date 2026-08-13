@@ -419,6 +419,23 @@
   .filter-btn.section-vd.active   { background: #4a5568; border-color: #4a5568; }
   .filter-btn.section-hw.active   { background: #6b46c1; border-color: #6b46c1; }
 
+  /* ── 빠른 날짜 필터 버튼 ── */
+  .quick-date-btn {
+    background: #f7f8fa;
+    border: 1.5px solid #eaecf0;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .quick-date-btn:hover { border-color: #05CD82; color: #05CD82; }
+  .quick-date-btn.active { background: #05CD82; border-color: #05CD82; color: #fff; }
+
   /* ── MAIN LAYOUT ── */
   .main {
     max-width: 1200px;
@@ -1507,18 +1524,20 @@
     justify-content: space-between;
     padding: 11px 18px;
     border-radius: 14px 14px 0 0;
+    border-bottom: 2px solid #eaecf0;
+    background: #fff;
   }
   .plt-name {
     font-size: 14px;
     font-weight: 800;
-    color: #fff;
+    color: #1a1a2e;
     letter-spacing: -0.2px;
   }
   .plt-cnt {
     font-size: 11px;
     font-weight: 700;
-    color: rgba(255,255,255,0.85);
-    background: rgba(0,0,0,0.15);
+    color: #05CD82;
+    background: rgba(5,205,130,0.1);
     border-radius: 20px;
     padding: 2px 9px;
   }
@@ -1593,6 +1612,10 @@
 <!-- ── 아카이브 날짜 필터 ── -->
 <div class="arc-filter-bar">
 <span class="arc-filter-lbl">날짜</span>
+<button class="quick-date-btn active" id="arcQdAll" onclick="arcQuickDate('all')">전체</button>
+<button class="quick-date-btn" id="arcQdToday" onclick="arcQuickDate('today')">오늘</button>
+<button class="quick-date-btn" id="arcQdWeek" onclick="arcQuickDate('week')">최근 1주</button>
+<button class="quick-date-btn" id="arcQdMonth" onclick="arcQuickDate('month')">최근 1개월</button>
 <div class="arc-dp-wrap" id="arcWrap">
 <button class="arc-dp-btn" id="arcBtn" onclick="arcToggle(event)">
 <span id="arcBtnLbl">전체 날짜</span>
@@ -2593,9 +2616,13 @@
 </div>
 <div class="filter-row">
 <span class="filter-label">날짜</span>
+<button class="quick-date-btn active" id="qdAll" onclick="quickDate('all')">전체</button>
+<button class="quick-date-btn" id="qdToday" onclick="quickDate('today')">오늘</button>
+<button class="quick-date-btn" id="qdWeek" onclick="quickDate('week')">최근 1주</button>
+<button class="quick-date-btn" id="qdMonth" onclick="quickDate('month')">최근 1개월</button>
 <div class="date-picker-wrap" id="datePickerWrap">
 <button class="date-picker-btn" id="datePickerBtn" onclick="toggleDatePicker(event)">
-<span id="datePickerLabel">전체 날짜</span>
+<span id="datePickerLabel">날짜 지정</span>
 <span class="dp-arrow">▾</span>
 </button>
 <div class="date-picker-popup" id="datePickerPopup">
@@ -7410,28 +7437,28 @@
 <div class="plt-wrap">
   <div class="plt-grid">
     <div class="plt-section">
-      <div class="plt-header" style="background:#05CD82;">
+      <div class="plt-header">
         <span class="plt-name">배달의민족</span>
         <span class="plt-cnt" id="plt-cnt-배달의민족"></span>
       </div>
       <div class="plt-list" id="plt-list-배달의민족"></div>
     </div>
     <div class="plt-section">
-      <div class="plt-header" style="background:#05CD82;">
+      <div class="plt-header">
         <span class="plt-name">쿠팡이츠</span>
         <span class="plt-cnt" id="plt-cnt-쿠팡이츠"></span>
       </div>
       <div class="plt-list" id="plt-list-쿠팡이츠"></div>
     </div>
     <div class="plt-section">
-      <div class="plt-header" style="background:#05CD82;">
+      <div class="plt-header">
         <span class="plt-name">요기요</span>
         <span class="plt-cnt" id="plt-cnt-요기요"></span>
       </div>
       <div class="plt-list" id="plt-list-요기요"></div>
     </div>
     <div class="plt-section">
-      <div class="plt-header" style="background:#05CD82;">
+      <div class="plt-header">
         <span class="plt-name">땡겨요</span>
         <span class="plt-cnt" id="plt-cnt-땡겨요"></span>
       </div>
@@ -17137,7 +17164,7 @@
     if (e.target === document.getElementById('nlModalOverlay')) closeNL();
   }
   // ── 상태 ──
-  const state = { section: 'all', dateFrom: null, dateTo: null, tag: 'all', query: '' };
+  const state = { sections: new Set(), dateFrom: null, dateTo: null, tags: new Set(), query: '' };
 
   // 기사에 날짜가 있는 날짜 세트 (달력에 dot 표시용)
   const ARTICLE_DATES = new Set(['2026-07-02','2026-07-03','2026-07-06','2026-07-07','2026-07-09','2026-07-10','2026-07-13','2026-07-14','2026-07-15','2026-07-16','2026-07-21','2026-07-22','2026-07-23','2026-07-24','2026-07-27','2026-07-28','2026-07-29','2026-07-30','2026-07-31','2026-08-03','2026-08-04','2026-08-06','2026-08-07','2026-08-10','2026-08-11','2026-08-12','2026-08-13']);
@@ -17164,10 +17191,36 @@
     const type  = btn.dataset.filter;
     const value = btn.dataset.value;
     if (!type || type === 'date') return;
-    document.querySelectorAll(`.filter-btn[data-filter="${type}"]`)
-      .forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    state[type] = value;
+
+    if (type === 'tag' || type === 'section') {
+      const stateSet = type === 'tag' ? state.tags : state.sections;
+      if (value === 'all') {
+        stateSet.clear();
+        document.querySelectorAll(`.filter-btn[data-filter="${type}"]`)
+          .forEach(b => b.classList.remove('active'));
+        document.querySelector(`.filter-btn[data-filter="${type}"][data-value="all"]`)
+          .classList.add('active');
+      } else {
+        document.querySelector(`.filter-btn[data-filter="${type}"][data-value="all"]`)
+          .classList.remove('active');
+        if (stateSet.has(value)) {
+          stateSet.delete(value);
+          btn.classList.remove('active');
+        } else {
+          stateSet.add(value);
+          btn.classList.add('active');
+        }
+        if (stateSet.size === 0) {
+          document.querySelector(`.filter-btn[data-filter="${type}"][data-value="all"]`)
+            .classList.add('active');
+        }
+      }
+    } else {
+      document.querySelectorAll(`.filter-btn[data-filter="${type}"]`)
+        .forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state[type] = value;
+    }
     applyFilters();
     updateFilterExecSummary();
   }
@@ -17205,8 +17258,8 @@
       const cardTags    = card.dataset.tags;
 
       const matchDate    = !state.dateFrom || (cardDate >= state.dateFrom && cardDate <= (state.dateTo || state.dateFrom));
-      const matchSection = state.section === 'all' || cardSection === state.section;
-      const matchTag     = state.tag     === 'all' || cardTags.split(' ').includes(state.tag);
+      const matchSection = state.sections.size === 0 || state.sections.has(cardSection);
+      const matchTag     = state.tags.size === 0 || cardTags.split(' ').some(t => state.tags.has(t));
 
       // 검색어 매칭 (제목 + bullet 본문 + 태그)
       let matchQuery = true;
@@ -17237,7 +17290,7 @@
 
     // 결과 설명 (resultCount id 유지)
     const info = document.getElementById('resultInfo');
-    const isFiltered = state.section !== 'all' || state.dateFrom || state.tag !== 'all' || state.query;
+    const isFiltered = state.sections.size > 0 || state.dateFrom || state.tags.size > 0 || state.query;
     info.innerHTML = isFiltered
       ? '<strong id="resultCount">' + visible + '</strong>건의 기사가 검색됐습니다.'
       : '<strong id="resultCount">' + visible + '</strong>건의 기사가 있습니다.';
@@ -17254,7 +17307,7 @@
     listEl.innerHTML = '';
 
     // 필터가 하나도 없으면 숨김
-    const isFiltered = state.section !== 'all' || state.dateFrom || state.tag !== 'all' || state.query;
+    const isFiltered = state.sections.size > 0 || state.dateFrom || state.tags.size > 0 || state.query;
     if (fesEl) fesEl.style.display = isFiltered ? '' : 'none';
     if (!isFiltered) return;
 
@@ -17266,8 +17319,8 @@
       const cardTags    = card.dataset.tags    || '';
 
       const matchDate    = !state.dateFrom || (cardDate >= state.dateFrom && cardDate <= (state.dateTo || state.dateFrom));
-      const matchSection = state.section === 'all' || cardSection === state.section;
-      const matchTag     = state.tag     === 'all' || cardTags.split(' ').includes(state.tag);
+      const matchSection = state.sections.size === 0 || state.sections.has(cardSection);
+      const matchTag     = state.tags.size === 0 || cardTags.split(' ').some(t => state.tags.has(t));
 
       let matchQuery = true;
       if (q) {
@@ -17296,7 +17349,7 @@
       const section   = card.dataset.section || '';
       const tags      = (card.dataset.tags || '').split(' ').filter(Boolean);
       const [, mo, d] = (card.dataset.date || '').split('-');
-      const dateLabel = mo && d ? `${parseInt(mo)}/${parseInt(d)}` : '';
+      const dateLabel = mo && d ? `${mo}/${d}` : '';
 
       if (!groups.has(section)) groups.set(section, []);
       groups.get(section).push({ insight, tags, dateLabel });
@@ -17483,9 +17536,9 @@
   function updateDpBtnLabel() {
     const btn   = document.getElementById('datePickerBtn');
     const label = document.getElementById('datePickerLabel');
-    const fmt = d => { const [,m,day] = d.split('-'); return m+'/'+parseInt(day); };
+    const fmt = d => { const [,m,day] = d.split('-'); return m+'/'+day; };
     if (!state.dateFrom) {
-      label.textContent = '전체 날짜';
+      label.textContent = '날짜 지정';
       btn.classList.remove('active');
     } else {
       label.textContent = (state.dateTo && state.dateTo !== state.dateFrom)
@@ -17499,6 +17552,29 @@
     state.dateFrom = null; state.dateTo = null;
     dpStep = 0; dpHoverDate = null;
     renderDatePicker(); updateDpBtnLabel(); applyFilters();
+  }
+
+  function quickDate(range) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (range === 'all') {
+      state.dateFrom = null; state.dateTo = null;
+      dpStep = 0; dpHoverDate = null;
+      renderDatePicker();
+    } else if (range === 'today') {
+      state.dateFrom = today; state.dateTo = today;
+    } else if (range === 'week') {
+      const d = new Date(); d.setDate(d.getDate() - 7);
+      state.dateFrom = d.toISOString().slice(0, 10); state.dateTo = today;
+    } else if (range === 'month') {
+      const d = new Date(); d.setMonth(d.getMonth() - 1);
+      state.dateFrom = d.toISOString().slice(0, 10); state.dateTo = today;
+    }
+    updateDpBtnLabel();
+    ['All','Today','Week','Month'].forEach(r => {
+      const el = document.getElementById('qd' + r);
+      if (el) el.classList.toggle('active', r.toLowerCase() === range);
+    });
+    applyFilters();
   }
 
   // 피커 버튼 onclick → toggleDatePicker(e) 로 stopPropagation
@@ -18053,6 +18129,26 @@
     });
 
     document.getElementById('arcResult').textContent = (f || kw) ? cnt + '건 표시 중' : '';
+  }
+
+  function arcQuickDate(range) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (range === 'all') {
+      arcS.from = null; arcS.to = null; arcS.step = 0; arcS.hover = null;
+    } else if (range === 'today') {
+      arcS.from = today; arcS.to = today; arcS.step = 0;
+    } else if (range === 'week') {
+      const d = new Date(); d.setDate(d.getDate() - 7);
+      arcS.from = d.toISOString().slice(0, 10); arcS.to = today; arcS.step = 0;
+    } else if (range === 'month') {
+      const d = new Date(); d.setMonth(d.getMonth() - 1);
+      arcS.from = d.toISOString().slice(0, 10); arcS.to = today; arcS.step = 0;
+    }
+    ['All','Today','Week','Month'].forEach(r => {
+      const el = document.getElementById('arcQd' + r);
+      if (el) el.classList.toggle('active', r.toLowerCase() === range);
+    });
+    arcUpdateBtn(); arcApply();
   }
 
   function arcReset() {
