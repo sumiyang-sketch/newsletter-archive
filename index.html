@@ -17597,29 +17597,29 @@
 
   // ── 프로모션 달력 ──
   const PROMOS = [
-    { id:'kfc',              name:'KFC 복버켓',           color:'#B2E8D4',
+    { id:'kfc',              company:'KFC',       name:'KFC 복버켓',           color:'#B2E8D4',
       periods:[['2026-07-14','2026-08-17']],
       memo:'초복 7/15·중복 7/25·말복 8/14 / 말복 당일 평시 대비 40% 이상 주문량 증가 예상' },
-    { id:'kfc-chickenallday',name:'KFC 치킨올데이 1+1',  color:'#90D8C0',
+    { id:'kfc-chickenallday',company:'KFC',       name:'KFC 치킨올데이 1+1',  color:'#90D8C0',
       periods:[['2026-08-11','2026-08-11']],
       memo:'매월 11일 치킨올데이 1+1 행사 / 당일 주문 집중 예상' },
-    { id:'starbucks',        name:'스타벅스 딜리버스',    color:'#A0DFC8',
+    { id:'starbucks',        company:'스타벅스',  name:'스타벅스 딜리버스',    color:'#A0DFC8',
       periods:[['2026-07-04','2026-07-06'],['2026-07-11','2026-07-13'],
                ['2026-07-18','2026-07-20'],['2026-07-25','2026-07-27'],
                ['2026-08-07','2026-08-09'],['2026-08-14','2026-08-16'],
                ['2026-08-21','2026-08-23'],['2026-08-28','2026-08-30']],
       periodLabel: '매주 금~일',
       memo:'20,000원 이상 배달비 무료 / 매주 금요일~일요일 반복 운영 — 주말 주문 증가 대응' },
-    { id:'pocketcu',         name:'포켓CU',               color:'#C5EDE0',
+    { id:'pocketcu',         company:'CU',        name:'포켓CU',               color:'#C5EDE0',
       periods:[['2026-07-01','2026-07-31'],['2026-08-01','2026-08-31']],
       memo:'첫 구매 고객 총 10,000원 혜택 (무료배달 3,000원+할인쿠폰 7,000원) / 기존 9,000원에서 1,000원 상향 / 오더 증가 예상, 배차 지연 주의' },
-    { id:'oliveyoung',       name:'올리브영',              color:'#8ED8BE',
+    { id:'oliveyoung',       company:'올리브영',  name:'올리브영',              color:'#8ED8BE',
       periods:[['2026-07-01','2026-07-03'],['2026-08-01','2026-08-03']],
       memo:'매월 1~3일 신규 브랜드 콜라보 / 주문량 약 20% 증가' },
-    { id:'ssg-festa',        name:'SSG 고래잇페스타',     color:'#B8E8D8',
+    { id:'ssg-festa',        company:'SSG',       name:'SSG 고래잇페스타',     color:'#B8E8D8',
       periods:[['2026-07-30','2026-08-02']],
       memo:'신선식품·휴가용품 최대 50% 할인 / 신선식품 물량 증가 예상' },
-    { id:'ssg-baro',         name:'SSG 바로퀵',           color:'#D4F0E6',
+    { id:'ssg-baro',         company:'SSG',       name:'SSG 바로퀵',           color:'#D4F0E6',
       periods:[['2026-08-01','2026-08-31']],
       memo:'화·수 12:00~14:00 시간 변경 적용 (기존 10~12시→12~14시) / 해당 시간대 오더 평시 대비 50% 이상 증가 예상' },
   ];
@@ -17730,18 +17730,32 @@
       return y + '.' + m + '.' + dd;
     };
 
-    body.innerHTML = active.map(({ promo, periods }) => {
-      const periodStr = promo.periodLabel || periods.map(([s, e]) =>
-        s === e ? fmt(s) : fmt(s) + ' ~ ' + fmt(e)
-      ).join(' / ');
-      const memoLines = promo.memo.split(' / ').map(l => `<span>· ${l}</span>`).join('');
-      return `<div class="promo-summary-row">
-        <div class="promo-summary-dot" style="background:${promo.color};border:1px solid rgba(0,0,0,0.08);"></div>
-        <div class="promo-summary-info">
-          <div class="promo-summary-name">${promo.name}</div>
-          <div class="promo-summary-period">${periodStr}</div>
-          <div class="promo-summary-memo">${memoLines}</div>
-        </div>
+    // company 기준으로 그룹핑
+    const grouped = new Map();
+    active.forEach(item => {
+      const company = item.promo.company || item.promo.name;
+      if (!grouped.has(company)) grouped.set(company, []);
+      grouped.get(company).push(item);
+    });
+
+    body.innerHTML = [...grouped.entries()].map(([company, items]) => {
+      const rows = items.map(({ promo, periods }) => {
+        const periodStr = promo.periodLabel || periods.map(([s, e]) =>
+          s === e ? fmt(s) : fmt(s) + ' ~ ' + fmt(e)
+        ).join(' / ');
+        const memoLines = promo.memo.split(' / ').map(l => `<span>· ${l}</span>`).join('');
+        return `<div class="promo-summary-row">
+          <div class="promo-summary-info">
+            <div class="promo-summary-name">${promo.name}</div>
+            <div class="promo-summary-period">${periodStr}</div>
+            <div class="promo-summary-memo">${memoLines}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:800;color:#1a1a2e;padding:6px 0 6px 0;margin-bottom:4px;border-bottom:2px solid #A8E6CF;">${company}</div>
+        ${rows}
       </div>`;
     }).join('');
   }
